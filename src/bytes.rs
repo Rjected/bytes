@@ -232,6 +232,11 @@ impl Bytes {
         unsafe { (self.vtable.is_unique)(&self.data) }
     }
 
+    /// Returns a reference to the inner `data` pointer.
+    pub fn inner_data(&self) -> &AtomicPtr<()> {
+        &self.data
+    }
+
     /// Creates `Bytes` instance from slice, by copying it.
     pub fn copy_from_slice(data: &[u8]) -> Self {
         data.to_vec().into()
