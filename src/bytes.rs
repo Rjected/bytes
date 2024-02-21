@@ -237,6 +237,21 @@ impl Bytes {
         &self.data
     }
 
+    /// Returns the inner data's capacity.
+    pub fn inner_data_size(&self) -> usize {
+        let shared = self.data.load(Ordering::Acquire);
+        let kind = shared as usize & KIND_MASK;
+
+        if kind == KIND_ARC {
+            let shared = shared.cast::<Shared>();
+            unsafe { (*shared).cap }
+        } else {
+            debug_assert_eq!(kind, KIND_VEC);
+            let buf = ptr_map(shared.cast(), |addr| addr & !KIND_MASK);
+            (self.ptr as usize - buf as usize) + self.len
+        }
+    }
+
     /// Creates `Bytes` instance from slice, by copying it.
     pub fn copy_from_slice(data: &[u8]) -> Self {
         data.to_vec().into()
